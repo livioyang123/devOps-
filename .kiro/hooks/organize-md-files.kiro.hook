@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Organize MD Files",
+  "description": "When a markdown file is created, automatically move it to the appropriate docs, tests, or checkpoints folder based on its content and context",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new markdown file was created. Please analyze its location and content, then move it to the appropriate folder: 'docs' for documentation, 'tests' for test-related files, 'checkpoints' for milestone documentation, or keep it in the current location if it's already in the right place. Consider the project structure: backend/docs, frontend/docs, root docs, backend/tests, and checkpoints folders."
+  }
+}
