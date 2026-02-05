@@ -108,6 +108,14 @@ dmypy.json
 # Kiro AI files (local development only)
 .kiro/
 
-# Documentation (local development only)
+# Documentation (local development only - keep only main README.md on GitHub)
 docs/
 checkpoints/
+backend/docs/
+frontend/docs/
+
+# Keep only README files in docs folders
+!docs/README.md
+!backend/docs/README.md
+!frontend/docs/README.md
+!checkpoints/README.md
