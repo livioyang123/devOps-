@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Auto Commit & Push",
+  "description": "Automatically commits and pushes all changes to git when agent completes a task",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "git add . & git commit -m \"Auto-commit: Task completed\" & git push"
+  }
+}
