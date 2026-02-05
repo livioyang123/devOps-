@@ -429,3 +429,41 @@ class ClusterResponse(BaseModel):
 class ClusterListResponse(BaseModel):
     """Response for listing clusters."""
     clusters: List[ClusterResponse]
+
+
+# Template related schemas
+class TemplateResponse(BaseModel):
+    """Response for template information."""
+    id: str
+    name: str
+    description: Optional[str] = None
+    category: Optional[str] = None
+    compose_content: str
+    required_params: Optional[Dict[str, Any]] = None
+    is_public: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TemplateListResponse(BaseModel):
+    """Response for listing templates."""
+    templates: List[TemplateResponse]
+
+
+class TemplateLoadRequest(BaseModel):
+    """Request for loading a template with parameters."""
+    template_id: str
+    parameters: Optional[Dict[str, str]] = Field(
+        None,
+        description="Parameter values for template placeholders"
+    )
+
+
+class TemplateLoadResponse(BaseModel):
+    """Response for loading a template."""
+    template_id: str
+    name: str
+    compose_content: str
+    message: str
