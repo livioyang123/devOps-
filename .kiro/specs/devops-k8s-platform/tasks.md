@@ -577,8 +577,8 @@ The implementation follows this sequence:
     - Test file organization
     - _Requirements: 13.2, 13.4_
 
-- [-] 30. Frontend Export Feature
-  - [-] 30.1 Add export button to manifest editor
+- [x] 30. Frontend Export Feature
+  - [x] 30.1 Add export button to manifest editor
     - Add "Export Manifests" button to ManifestEditorComponent
     - Call backend export endpoint
     - Trigger file download
