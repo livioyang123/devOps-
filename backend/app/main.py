@@ -23,7 +23,7 @@ from app.middleware import (
 )
 
 # Import routers
-from app.routers import auth, compose, convert, websocket, deploy, monitor, alerts, config, clusters, export, templates
+from app.routers import auth, compose, convert, websocket, deploy, monitor, alerts, config, clusters, export, templates, cost
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -158,6 +158,7 @@ app.include_router(config.router)
 app.include_router(clusters.router)
 app.include_router(export.router)
 app.include_router(templates.router)
+app.include_router(cost.router)
 
 if __name__ == "__main__":
     uvicorn.run(

@@ -17,6 +17,7 @@ from .websocket_handler import WebSocketHandler, websocket_handler
 from .monitor import MonitorService, get_monitor_service
 from .ai_analyzer import AIAnalyzerService, get_ai_analyzer_service
 from .alert import AlertService, get_alert_service
+from .cost_estimator import CostEstimationService
 
 __all__ = [
     "CacheService",
@@ -39,5 +40,6 @@ __all__ = [
     "AIAnalyzerService",
     "get_ai_analyzer_service",
     "AlertService",
-    "get_alert_service"
+    "get_alert_service",
+    "CostEstimationService"
 ]

@@ -467,3 +467,34 @@ class TemplateLoadResponse(BaseModel):
     name: str
     compose_content: str
     message: str
+
+
+# Cost Estimation related schemas
+class ResourceRequirements(BaseModel):
+    """Resource requirements for a deployment."""
+    cpu_cores: float = Field(..., description="Total CPU cores requested")
+    memory_gb: float = Field(..., description="Total memory in GB requested")
+    storage_gb: float = Field(..., description="Total storage in GB requested")
+    pod_count: int = Field(..., description="Number of pods")
+
+
+class CostBreakdown(BaseModel):
+    """Cost breakdown by resource type."""
+    cpu_cost: float = Field(..., description="Monthly cost for CPU")
+    memory_cost: float = Field(..., description="Monthly cost for memory")
+    storage_cost: float = Field(..., description="Monthly cost for storage")
+    total_cost: float = Field(..., description="Total monthly cost")
+
+
+class CostEstimateResponse(BaseModel):
+    """Response for cost estimation."""
+    deployment_id: str
+    cloud_provider: str = Field(..., description="Cloud provider: gke, eks, aks")
+    resources: ResourceRequirements
+    cost_breakdown: CostBreakdown
+    estimated_monthly_cost: float = Field(..., description="Estimated monthly cost in USD")
+    disclaimer: str = Field(
+        default="This is an approximate estimate based on standard pricing. Actual costs may vary based on region, discounts, and usage patterns.",
+        description="Disclaimer about cost accuracy"
+    )
+    timestamp: datetime
