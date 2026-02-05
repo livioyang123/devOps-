@@ -104,3 +104,10 @@ celerybeat.pid
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Kiro AI files (local development only)
+.kiro/
+
+# Documentation (local development only)
+docs/
+checkpoints/
