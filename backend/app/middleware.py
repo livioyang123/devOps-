@@ -96,6 +96,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 class InputSanitizationMiddleware(BaseHTTPMiddleware):
     """
     Middleware to sanitize user inputs and prevent injection attacks
+    
+    Validates: Requirement 15.3 - Input sanitization to prevent injection attacks
     """
     
     # Patterns for detecting potential injection attacks
@@ -108,6 +110,8 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
         r"(;\s*DROP\b)",
         r"(\bOR\b\s+\d+\s*=\s*\d+)",
         r"(\'\s*OR\s*\'\d+\'\s*=\s*\'\d+)",
+        r"(\bEXEC\b.*\()",
+        r"(\bEXECUTE\b.*\()",
     ]
     
     XSS_PATTERNS = [
@@ -117,12 +121,34 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
         r"<iframe[^>]*>",
         r"<object[^>]*>",
         r"<embed[^>]*>",
+        r"<applet[^>]*>",
+        r"<meta[^>]*>",
+        r"<link[^>]*>",
     ]
     
     COMMAND_INJECTION_PATTERNS = [
-        r"[;&|`$]",
+        r"[;&|`](?!\s*$)",  # Allow trailing semicolons in YAML but not command chains
         r"\$\([^)]*\)",
         r"`[^`]*`",
+        r"\|\s*\w+",  # Pipe to commands
+        r">\s*/",  # Redirect to files
+        r"<\s*/",  # Read from files
+    ]
+    
+    # Paths that should skip YAML validation (they don't handle YAML content)
+    NON_YAML_PATHS = [
+        "/api/auth",
+        "/api/config",
+        "/api/clusters",
+        "/api/models",
+        "/api/deploy",
+        "/api/export",
+        "/api/metrics",
+        "/api/logs",
+        "/api/analyze-logs",
+        "/api/alerts",
+        "/api/cost-estimate",
+        "/ws/",
     ]
     
     def __init__(self, app):
@@ -133,28 +159,124 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
         self.xss_patterns = [re.compile(p, re.IGNORECASE) for p in self.XSS_PATTERNS]
         self.cmd_patterns = [re.compile(p) for p in self.COMMAND_INJECTION_PATTERNS]
     
-    def check_sql_injection(self, value: str) -> bool:
-        """Check if value contains SQL injection patterns"""
-        return any(pattern.search(value) for pattern in self.sql_patterns)
+    def is_yaml_endpoint(self, path: str) -> bool:
+        """Check if endpoint handles YAML content"""
+        # Endpoints that handle YAML content
+        yaml_endpoints = ["/api/compose", "/api/convert", "/api/templates"]
+        return any(path.startswith(endpoint) for endpoint in yaml_endpoints)
     
-    def check_xss(self, value: str) -> bool:
-        """Check if value contains XSS patterns"""
-        return any(pattern.search(value) for pattern in self.xss_patterns)
+    def check_sql_injection(self, value: str, is_yaml: bool = False) -> bool:
+        """
+        Check if value contains SQL injection patterns
+        
+        Args:
+            value: String to check
+            is_yaml: If True, be more lenient with YAML-specific syntax
+        """
+        for pattern in self.sql_patterns:
+            match = pattern.search(value)
+            if match:
+                # For YAML content, allow some patterns that might be legitimate
+                if is_yaml:
+                    # Allow SQL-like keywords in YAML values/comments
+                    matched_text = match.group(0)
+                    # Check if it's in a YAML comment or string value
+                    if re.search(r'#.*' + re.escape(matched_text), value) or \
+                       re.search(r'["\'].*' + re.escape(matched_text) + r'.*["\']', value):
+                        continue
+                return True
+        return False
     
-    def check_command_injection(self, value: str) -> bool:
-        """Check if value contains command injection patterns"""
-        return any(pattern.search(value) for pattern in self.cmd_patterns)
+    def check_xss(self, value: str, is_yaml: bool = False) -> bool:
+        """
+        Check if value contains XSS patterns
+        
+        Args:
+            value: String to check
+            is_yaml: If True, be more lenient with YAML-specific syntax
+        """
+        for pattern in self.xss_patterns:
+            if pattern.search(value):
+                # For YAML, HTML-like tags might be legitimate in string values
+                if is_yaml:
+                    # This is still dangerous, so we'll be strict
+                    return True
+                return True
+        return False
     
-    def sanitize_value(self, value: str) -> tuple[bool, str]:
+    def check_command_injection(self, value: str, is_yaml: bool = False) -> bool:
+        """
+        Check if value contains command injection patterns
+        
+        Args:
+            value: String to check
+            is_yaml: If True, be more lenient with YAML-specific syntax
+        """
+        for pattern in self.cmd_patterns:
+            match = pattern.search(value)
+            if match:
+                if is_yaml:
+                    # In YAML, some characters are legitimate
+                    # Allow $ for environment variables like ${VAR}
+                    matched_text = match.group(0)
+                    if matched_text.startswith('$') and '{' in value:
+                        continue
+                    # Allow pipes in YAML multiline strings
+                    if matched_text.strip() == '|':
+                        continue
+                return True
+        return False
+    
+    def sanitize_yaml_content(self, content: str) -> tuple[bool, str]:
+        """
+        Sanitize YAML content specifically
+        
+        Args:
+            content: YAML content to sanitize
+            
+        Returns:
+            Tuple of (is_safe, reason)
+        """
+        # Check for extremely large content (potential DoS)
+        if len(content) > 10 * 1024 * 1024:  # 10MB limit
+            return False, "YAML content exceeds maximum size limit (10MB)"
+        
+        # Check for excessive nesting (YAML bomb)
+        max_indent = 0
+        for line in content.split('\n'):
+            if line.strip():
+                indent = len(line) - len(line.lstrip())
+                max_indent = max(max_indent, indent)
+        
+        if max_indent > 100:  # Reasonable nesting limit
+            return False, "YAML content has excessive nesting depth"
+        
+        # Check for suspicious patterns with YAML context
+        if self.check_sql_injection(content, is_yaml=True):
+            return False, "Potential SQL injection detected in YAML content"
+        
+        if self.check_xss(content, is_yaml=True):
+            return False, "Potential XSS attack detected in YAML content"
+        
+        if self.check_command_injection(content, is_yaml=True):
+            return False, "Potential command injection detected in YAML content"
+        
+        return True, ""
+    
+    def sanitize_value(self, value: str, is_yaml: bool = False) -> tuple[bool, str]:
         """
         Sanitize a string value
         
         Args:
             value: String to sanitize
+            is_yaml: If True, apply YAML-specific sanitization
             
         Returns:
             Tuple of (is_safe, reason)
         """
+        if is_yaml:
+            return self.sanitize_yaml_content(value)
+        
         if self.check_sql_injection(value):
             return False, "Potential SQL injection detected"
         
@@ -178,12 +300,31 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
             Response or validation error
         """
         # Skip sanitization for health checks and static files
-        if request.url.path in ["/health", "/health/detailed", "/", "/api/docs", "/api/redoc"]:
+        if request.url.path in ["/health", "/health/detailed", "/", "/api/docs", "/api/redoc", "/openapi.json"]:
             return await call_next(request)
+        
+        # Determine if this is a YAML-handling endpoint
+        is_yaml_endpoint = self.is_yaml_endpoint(request.url.path)
         
         # Check query parameters
         for key, value in request.query_params.items():
-            is_safe, reason = self.sanitize_value(str(value))
+            # Skip empty values
+            if not value:
+                continue
+            
+            # Check for path traversal in query params
+            if ".." in value or "~/" in value:
+                logger.warning(f"Path traversal attempt detected in query param '{key}': {value}")
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={
+                        "error": "invalid_input",
+                        "message": "Path traversal attempt detected",
+                        "field": key
+                    }
+                )
+                
+            is_safe, reason = self.sanitize_value(str(value), is_yaml=False)
             if not is_safe:
                 logger.warning(f"Malicious input detected in query param '{key}': {reason}")
                 return JSONResponse(
@@ -197,7 +338,8 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
         
         # Check path parameters (basic check)
         path = request.url.path
-        is_safe, reason = self.sanitize_value(path)
+        # Don't apply YAML rules to path
+        is_safe, reason = self.sanitize_value(path, is_yaml=False)
         if not is_safe:
             logger.warning(f"Malicious input detected in path: {reason}")
             return JSONResponse(
@@ -208,8 +350,9 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
                 }
             )
         
-        # For POST/PUT/PATCH requests, we'll validate body in the endpoint
-        # using Pydantic models, which provides additional validation
+        # For POST/PUT/PATCH requests with JSON body, validate after parsing
+        # Note: YAML content validation happens in the endpoint using Pydantic models
+        # and the ParserService, which provides more context-aware validation
         
         return await call_next(request)
 
