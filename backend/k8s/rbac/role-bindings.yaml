@@ -1,0 +1,74 @@
+---
+# RoleBinding for Deployer Service Account
+# Binds the deployer role to the deployer service account in the default namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devops-platform-deployer-binding
+  namespace: default
+  labels:
+    app: devops-platform
+    component: deployer
+subjects:
+  - kind: ServiceAccount
+    name: devops-platform-deployer
+    namespace: default
+roleRef:
+  kind: Role
+  name: devops-platform-deployer-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRoleBinding for Deployer Service Account
+# Binds the deployer cluster role to the deployer service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: devops-platform-deployer-cluster-binding
+  labels:
+    app: devops-platform
+    component: deployer
+subjects:
+  - kind: ServiceAccount
+    name: devops-platform-deployer
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: devops-platform-deployer-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# RoleBinding for Monitor Service Account
+# Binds the monitor role to the monitor service account in the default namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: devops-platform-monitor-binding
+  namespace: default
+  labels:
+    app: devops-platform
+    component: monitor
+subjects:
+  - kind: ServiceAccount
+    name: devops-platform-monitor
+    namespace: default
+roleRef:
+  kind: Role
+  name: devops-platform-monitor-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# ClusterRoleBinding for Monitor Service Account
+# Binds the monitor cluster role to the monitor service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: devops-platform-monitor-cluster-binding
+  labels:
+    app: devops-platform
+    component: monitor
+subjects:
+  - kind: ServiceAccount
+    name: devops-platform-monitor
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: devops-platform-monitor-cluster-role
+  apiGroup: rbac.authorization.k8s.io

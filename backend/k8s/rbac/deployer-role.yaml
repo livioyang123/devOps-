@@ -1,0 +1,86 @@
+---
+# Role for Deployer Service Account
+# Grants minimal permissions required for deployment operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: devops-platform-deployer-role
+  namespace: default
+  labels:
+    app: devops-platform
+    component: deployer
+rules:
+  # ConfigMaps - read, create, update, delete
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+  
+  # Secrets - read, create, update, delete
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+  
+  # PersistentVolumeClaims - read, create, delete
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "create", "delete"]
+  
+  # Services - read, create, update, delete
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+  
+  # Pods - read only (for health checks and status)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  
+  # Pod logs - read only (for monitoring)
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+  
+  # Events - read only (for health checks)
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+  
+  # Deployments - read, create, update, delete
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+  
+  # StatefulSets - read, create, update, delete
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+  
+  # ReplicaSets - read only (for deployment status)
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+  
+  # Ingress - read, create, update, delete
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+---
+# ClusterRole for Deployer Service Account (for cluster-wide operations)
+# Only includes permissions that require cluster scope
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: devops-platform-deployer-cluster-role
+  labels:
+    app: devops-platform
+    component: deployer
+rules:
+  # Namespaces - read only (to validate namespace existence)
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  
+  # Nodes - read only (for health checks and pod placement info)
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]

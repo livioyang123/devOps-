@@ -1,0 +1,95 @@
+---
+# Role for Monitor Service Account
+# Grants minimal read-only permissions required for monitoring operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: devops-platform-monitor-role
+  namespace: default
+  labels:
+    app: devops-platform
+    component: monitor
+rules:
+  # Pods - read only (for metrics and status)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  
+  # Pod logs - read only
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+  
+  # Pod status - read only
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["get", "list"]
+  
+  # Services - read only
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+  
+  # Events - read only
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+  
+  # ConfigMaps - read only
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  
+  # Deployments - read only
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+  
+  # Deployment status - read only
+  - apiGroups: ["apps"]
+    resources: ["deployments/status"]
+    verbs: ["get", "list"]
+  
+  # StatefulSets - read only
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["get", "list", "watch"]
+  
+  # StatefulSet status - read only
+  - apiGroups: ["apps"]
+    resources: ["statefulsets/status"]
+    verbs: ["get", "list"]
+  
+  # ReplicaSets - read only
+  - apiGroups: ["apps"]
+    resources: ["replicasets"]
+    verbs: ["get", "list", "watch"]
+  
+  # PersistentVolumeClaims - read only (for storage metrics)
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list"]
+---
+# ClusterRole for Monitor Service Account (for cluster-wide monitoring)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: devops-platform-monitor-cluster-role
+  labels:
+    app: devops-platform
+    component: monitor
+rules:
+  # Nodes - read only (for node metrics)
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+  
+  # Node metrics - read only
+  - apiGroups: [""]
+    resources: ["nodes/stats"]
+    verbs: ["get", "list"]
+  
+  # Namespaces - read only
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]

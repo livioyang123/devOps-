@@ -55,14 +55,16 @@ class HealthCheckResult:
 class DeployerService:
     """Service for deploying Kubernetes manifests to clusters"""
     
-    def __init__(self, websocket_handler=None):
+    def __init__(self, websocket_handler=None, service_account_token: Optional[str] = None):
         """
         Initialize Deployer Service
         
         Args:
             websocket_handler: Optional WebSocket handler for real-time updates
+            service_account_token: Optional service account token for RBAC authentication
         """
         self.websocket_handler = websocket_handler
+        self.service_account_token = service_account_token
         self.k8s_client = None
         self.apps_v1 = None
         self.core_v1 = None
@@ -74,28 +76,58 @@ class DeployerService:
         Validate connectivity to Kubernetes cluster
         
         Args:
-            cluster_config: Optional cluster configuration dict
+            cluster_config: Optional cluster configuration dict with keys:
+                - host: Cluster API server URL
+                - token: Service account token (overrides instance token)
+                - verify_ssl: Whether to verify SSL certificates (default: True)
             
         Returns:
             Tuple of (success, message)
         """
         try:
-            # Load kubeconfig
-            if cluster_config:
-                # Load from provided config
-                # For now, we'll use the default kubeconfig
-                # In production, this would load from the cluster_config dict
-                config.load_kube_config()
+            # Determine authentication method
+            if cluster_config and 'token' in cluster_config:
+                # Use token from cluster config
+                token = cluster_config['token']
+                host = cluster_config.get('host')
+                verify_ssl = cluster_config.get('verify_ssl', True)
+                
+                # Create configuration with service account token
+                configuration = client.Configuration()
+                if host:
+                    configuration.host = host
+                configuration.api_key = {"authorization": f"Bearer {token}"}
+                configuration.verify_ssl = verify_ssl
+                
+                # Create API client with custom configuration
+                self.k8s_client = client.ApiClient(configuration)
+                
+            elif self.service_account_token:
+                # Use instance service account token
+                configuration = client.Configuration()
+                
+                # Try to get cluster host from environment or use default
+                if cluster_config and 'host' in cluster_config:
+                    configuration.host = cluster_config['host']
+                
+                configuration.api_key = {"authorization": f"Bearer {self.service_account_token}"}
+                configuration.verify_ssl = cluster_config.get('verify_ssl', True) if cluster_config else True
+                
+                # Create API client with custom configuration
+                self.k8s_client = client.ApiClient(configuration)
+                
             else:
-                # Try to load from default locations
+                # Fall back to kubeconfig or in-cluster config
                 try:
                     config.load_kube_config()
                 except ConfigException:
                     # Try in-cluster config (when running inside K8s)
                     config.load_incluster_config()
+                
+                # Create default API client
+                self.k8s_client = client.ApiClient()
             
             # Initialize API clients
-            self.k8s_client = client.ApiClient()
             self.core_v1 = client.CoreV1Api(self.k8s_client)
             self.apps_v1 = client.AppsV1Api(self.k8s_client)
             self.networking_v1 = client.NetworkingV1Api(self.k8s_client)

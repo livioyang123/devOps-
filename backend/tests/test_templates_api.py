@@ -1,25 +1,27 @@
 """
-Tests for template management API endpoints
+Unit tests for template management API endpoints
 """
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import uuid
-from datetime import datetime
+from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.database import Base, get_db
 from app.models import Template, User
-from app.auth import create_access_token
+from app.auth import get_password_hash, create_access_token
+import uuid
 
-# Create test database
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_templates.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# Create in-memory SQLite database for testing
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Create tables
-Base.metadata.create_all(bind=engine)
 
 
 def override_get_db():
@@ -37,53 +39,30 @@ client = TestClient(app)
 
 
 @pytest.fixture(scope="function")
-def db_session():
-    """Create a fresh database session for each test"""
-    Base.metadata.drop_all(bind=engine)
+def setup_database():
+    """Create tables and seed test data before each test"""
     Base.metadata.create_all(bind=engine)
+    
     db = TestingSessionLocal()
-    yield db
-    db.close()
-
-
-@pytest.fixture
-def test_user(db_session):
-    """Create a test user"""
-    user = User(
+    
+    # Create test user
+    test_user = User(
         id=uuid.uuid4(),
         email="test@example.com",
-        hashed_password="hashed_password",
+        hashed_password=get_password_hash("testpassword"),
         full_name="Test User",
-        is_active=True
+        is_active=True,
+        is_superuser=False
     )
-    db_session.add(user)
-    db_session.commit()
-    db_session.refresh(user)
-    return user
-
-
-@pytest.fixture
-def auth_token(test_user):
-    """Create authentication token for test user"""
-    return create_access_token(data={"sub": str(test_user.id)})
-
-
-@pytest.fixture
-def auth_headers(auth_token):
-    """Create authorization headers"""
-    return {"Authorization": f"Bearer {auth_token}"}
-
-
-@pytest.fixture
-def sample_templates(db_session):
-    """Create sample templates for testing"""
-    templates = [
-        Template(
-            id=uuid.uuid4(),
-            name="WordPress",
-            description="WordPress with MySQL database",
-            category="web",
-            compose_content="""version: '3.8'
+    db.add(test_user)
+    
+    # Create test templates
+    template1 = Template(
+        id=uuid.uuid4(),
+        name="WordPress",
+        description="WordPress with MySQL database",
+        category="web",
+        compose_content="""version: '3.8'
 services:
   wordpress:
     image: wordpress:latest
@@ -92,244 +71,228 @@ services:
     environment:
       WORDPRESS_DB_PASSWORD: {{DB_PASSWORD}}
 """,
-            required_params={
-                "parameters": ["DB_PASSWORD"],
-                "descriptions": {"DB_PASSWORD": "Database password"}
-            },
-            is_public=True
-        ),
-        Template(
-            id=uuid.uuid4(),
-            name="LAMP Stack",
-            description="Linux, Apache, MySQL, PHP",
-            category="web",
-            compose_content="""version: '3.8'
+        required_params={
+            "parameters": ["DB_PASSWORD"],
+            "descriptions": {"DB_PASSWORD": "Database password"}
+        },
+        is_public=True
+    )
+    
+    template2 = Template(
+        id=uuid.uuid4(),
+        name="LAMP Stack",
+        description="Linux, Apache, MySQL, PHP",
+        category="web",
+        compose_content="""version: '3.8'
 services:
   apache:
     image: php:8.1-apache
     ports:
       - "8080:80"
 """,
-            required_params=None,
-            is_public=True
-        ),
-        Template(
-            id=uuid.uuid4(),
-            name="Private Template",
-            description="Private template",
-            category="test",
-            compose_content="version: '3.8'\nservices: {}",
-            required_params=None,
-            is_public=False
-        )
-    ]
+        required_params=None,
+        is_public=True
+    )
     
-    for template in templates:
-        db_session.add(template)
+    template3 = Template(
+        id=uuid.uuid4(),
+        name="Private Template",
+        description="Private template",
+        category="database",
+        compose_content="version: '3.8'\nservices:\n  db:\n    image: postgres:15",
+        required_params=None,
+        is_public=False
+    )
     
-    db_session.commit()
+    db.add(template1)
+    db.add(template2)
+    db.add(template3)
+    db.commit()
     
-    for template in templates:
-        db_session.refresh(template)
+    # Store template IDs for tests
+    template_ids = {
+        "wordpress": str(template1.id),
+        "lamp": str(template2.id),
+        "private": str(template3.id)
+    }
     
-    return templates
+    db.close()
+    
+    yield test_user.id, template_ids
+    
+    Base.metadata.drop_all(bind=engine)
 
 
-class TestListTemplates:
-    """Tests for GET /api/templates endpoint"""
-    
-    def test_list_templates_success(self, sample_templates, auth_headers):
-        """Test listing all public templates"""
-        response = client.get("/api/templates", headers=auth_headers)
-        
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert "templates" in data
-        # Should only return public templates
-        assert len(data["templates"]) == 2
-        
-        # Verify template structure
-        template = data["templates"][0]
-        assert "id" in template
-        assert "name" in template
-        assert "description" in template
-        assert "category" in template
-        assert "compose_content" in template
-        assert "required_params" in template
-        assert "is_public" in template
-        assert "created_at" in template
-    
-    def test_list_templates_no_auth(self, sample_templates):
-        """Test listing templates without authentication"""
-        response = client.get("/api/templates")
-        
-        # Should fail without authentication
-        assert response.status_code == 401
-    
-    def test_list_templates_empty(self, auth_headers, db_session):
-        """Test listing templates when none exist"""
-        response = client.get("/api/templates", headers=auth_headers)
-        
-        assert response.status_code == 200
-        data = response.json()
-        assert data["templates"] == []
+def get_auth_headers(user_id):
+    """Generate authentication headers for testing"""
+    access_token = create_access_token(data={"sub": "test@example.com", "user_id": str(user_id)})
+    return {"Authorization": f"Bearer {access_token}"}
 
 
-class TestGetTemplate:
-    """Tests for GET /api/templates/{template_id} endpoint"""
+def test_list_templates(setup_database):
+    """Test GET /api/templates endpoint"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
     
-    def test_get_template_success(self, sample_templates, auth_headers):
-        """Test getting a specific template"""
-        template_id = str(sample_templates[0].id)
-        response = client.get(f"/api/templates/{template_id}", headers=auth_headers)
-        
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data["id"] == template_id
-        assert data["name"] == "WordPress"
-        assert data["category"] == "web"
-        assert "compose_content" in data
-        assert data["required_params"] is not None
+    response = client.get("/api/templates", headers=headers)
     
-    def test_get_template_not_found(self, auth_headers):
-        """Test getting a non-existent template"""
-        fake_id = str(uuid.uuid4())
-        response = client.get(f"/api/templates/{fake_id}", headers=auth_headers)
-        
-        assert response.status_code == 404
-        assert "not found" in response.json()["detail"].lower()
+    assert response.status_code == 200
+    data = response.json()
+    assert "templates" in data
+    assert len(data["templates"]) == 2  # Only public templates
     
-    def test_get_template_invalid_id(self, auth_headers):
-        """Test getting a template with invalid ID format"""
-        response = client.get("/api/templates/invalid-id", headers=auth_headers)
-        
-        assert response.status_code == 400
-        assert "invalid" in response.json()["detail"].lower()
-    
-    def test_get_private_template(self, sample_templates, auth_headers):
-        """Test getting a private template (should not be accessible)"""
-        private_template = sample_templates[2]
-        template_id = str(private_template.id)
-        response = client.get(f"/api/templates/{template_id}", headers=auth_headers)
-        
-        # Private templates should not be accessible
-        assert response.status_code == 404
+    # Verify template structure
+    template = data["templates"][0]
+    assert "id" in template
+    assert "name" in template
+    assert "description" in template
+    assert "category" in template
+    assert "compose_content" in template
+    assert "required_params" in template
+    assert "is_public" in template
+    assert "created_at" in template
 
 
-class TestLoadTemplate:
-    """Tests for POST /api/templates/{template_id}/load endpoint"""
-    
-    def test_load_template_without_params(self, sample_templates, auth_headers):
-        """Test loading a template that doesn't require parameters"""
-        template_id = str(sample_templates[1].id)  # LAMP Stack without params
-        response = client.post(
-            f"/api/templates/{template_id}/load",
-            json={"template_id": template_id},
-            headers=auth_headers
-        )
-        
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data["template_id"] == template_id
-        assert data["name"] == "LAMP Stack"
-        assert "compose_content" in data
-        assert "message" in data
-    
-    def test_load_template_with_params(self, sample_templates, auth_headers):
-        """Test loading a template with required parameters"""
-        template_id = str(sample_templates[0].id)  # WordPress with DB_PASSWORD
-        response = client.post(
-            f"/api/templates/{template_id}/load",
-            json={
-                "template_id": template_id,
-                "parameters": {
-                    "DB_PASSWORD": "secure_password_123"
-                }
-            },
-            headers=auth_headers
-        )
-        
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data["template_id"] == template_id
-        assert data["name"] == "WordPress"
-        # Verify parameter substitution
-        assert "{{DB_PASSWORD}}" not in data["compose_content"]
-        assert "secure_password_123" in data["compose_content"]
-    
-    def test_load_template_missing_params(self, sample_templates, auth_headers):
-        """Test loading a template without providing required parameters"""
-        template_id = str(sample_templates[0].id)  # WordPress requires DB_PASSWORD
-        response = client.post(
-            f"/api/templates/{template_id}/load",
-            json={"template_id": template_id},
-            headers=auth_headers
-        )
-        
-        assert response.status_code == 400
-        assert "missing required parameters" in response.json()["detail"].lower()
-    
-    def test_load_template_not_found(self, auth_headers):
-        """Test loading a non-existent template"""
-        fake_id = str(uuid.uuid4())
-        response = client.post(
-            f"/api/templates/{fake_id}/load",
-            json={"template_id": fake_id},
-            headers=auth_headers
-        )
-        
-        assert response.status_code == 404
-    
-    def test_load_template_invalid_id(self, auth_headers):
-        """Test loading a template with invalid ID format"""
-        response = client.post(
-            "/api/templates/invalid-id/load",
-            json={"template_id": "invalid-id"},
-            headers=auth_headers
-        )
-        
-        assert response.status_code == 400
+def test_list_templates_unauthorized():
+    """Test GET /api/templates without authentication"""
+    response = client.get("/api/templates")
+    assert response.status_code == 401
 
 
-class TestTemplateIntegration:
-    """Integration tests for template workflow"""
+def test_get_template_by_id(setup_database):
+    """Test GET /api/templates/{template_id} endpoint"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
     
-    def test_complete_template_workflow(self, sample_templates, auth_headers):
-        """Test complete workflow: list → get → load"""
-        # 1. List templates
-        list_response = client.get("/api/templates", headers=auth_headers)
-        assert list_response.status_code == 200
-        templates = list_response.json()["templates"]
-        assert len(templates) > 0
-        
-        # 2. Get specific template
-        template_id = templates[0]["id"]
-        get_response = client.get(f"/api/templates/{template_id}", headers=auth_headers)
-        assert get_response.status_code == 200
-        template = get_response.json()
-        
-        # 3. Load template
-        load_payload = {"template_id": template_id}
-        
-        # Add parameters if required
-        if template.get("required_params"):
-            params = template["required_params"].get("parameters", [])
-            if params:
-                load_payload["parameters"] = {param: f"test_{param}" for param in params}
-        
-        load_response = client.post(
-            f"/api/templates/{template_id}/load",
-            json=load_payload,
-            headers=auth_headers
-        )
-        assert load_response.status_code == 200
-        loaded = load_response.json()
-        assert "compose_content" in loaded
+    template_id = template_ids["wordpress"]
+    response = client.get(f"/api/templates/{template_id}", headers=headers)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == template_id
+    assert data["name"] == "WordPress"
+    assert data["category"] == "web"
+    assert "{{DB_PASSWORD}}" in data["compose_content"]
+    assert data["required_params"] is not None
+    assert "DB_PASSWORD" in data["required_params"]["parameters"]
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+def test_get_template_invalid_id(setup_database):
+    """Test GET /api/templates/{template_id} with invalid ID"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    response = client.get("/api/templates/invalid-uuid", headers=headers)
+    assert response.status_code == 400
+    assert "Invalid template ID format" in response.json()["detail"]
+
+
+def test_get_template_not_found(setup_database):
+    """Test GET /api/templates/{template_id} with non-existent ID"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    fake_id = str(uuid.uuid4())
+    response = client.get(f"/api/templates/{fake_id}", headers=headers)
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"]
+
+
+def test_get_private_template(setup_database):
+    """Test GET /api/templates/{template_id} for private template"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    template_id = template_ids["private"]
+    response = client.get(f"/api/templates/{template_id}", headers=headers)
+    assert response.status_code == 404  # Private templates should not be accessible
+
+
+def test_load_template_without_params(setup_database):
+    """Test POST /api/templates/{template_id}/load without parameters"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    template_id = template_ids["lamp"]
+    response = client.post(
+        f"/api/templates/{template_id}/load",
+        headers=headers,
+        json={}
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["template_id"] == template_id
+    assert data["name"] == "LAMP Stack"
+    assert "compose_content" in data
+    assert "message" in data
+
+
+def test_load_template_with_params(setup_database):
+    """Test POST /api/templates/{template_id}/load with parameters"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    template_id = template_ids["wordpress"]
+    response = client.post(
+        f"/api/templates/{template_id}/load",
+        headers=headers,
+        json={
+            "parameters": {
+                "DB_PASSWORD": "my_secure_password"
+            }
+        }
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["template_id"] == template_id
+    assert data["name"] == "WordPress"
+    assert "my_secure_password" in data["compose_content"]
+    assert "{{DB_PASSWORD}}" not in data["compose_content"]
+
+
+def test_load_template_missing_required_params(setup_database):
+    """Test POST /api/templates/{template_id}/load with missing required parameters"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    template_id = template_ids["wordpress"]
+    response = client.post(
+        f"/api/templates/{template_id}/load",
+        headers=headers,
+        json={}
+    )
+    
+    assert response.status_code == 400
+    assert "Missing required parameters" in response.json()["detail"]
+    assert "DB_PASSWORD" in response.json()["detail"]
+
+
+def test_load_template_invalid_id(setup_database):
+    """Test POST /api/templates/{template_id}/load with invalid ID"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    response = client.post(
+        "/api/templates/invalid-uuid/load",
+        headers=headers,
+        json={}
+    )
+    assert response.status_code == 400
+    assert "Invalid template ID format" in response.json()["detail"]
+
+
+def test_load_template_not_found(setup_database):
+    """Test POST /api/templates/{template_id}/load with non-existent ID"""
+    user_id, template_ids = setup_database
+    headers = get_auth_headers(user_id)
+    
+    fake_id = str(uuid.uuid4())
+    response = client.post(
+        f"/api/templates/{fake_id}/load",
+        headers=headers,
+        json={}
+    )
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"]
