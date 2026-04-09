@@ -43,8 +43,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         Returns:
             Response or rate limit error
         """
-        # Skip rate limiting for health checks
-        if request.url.path in ["/health", "/health/detailed"]:
+        # Skip rate limiting for health checks and CORS preflight
+        if request.method == "OPTIONS" or request.url.path in ["/health", "/health/detailed"]:
             return await call_next(request)
         
         # Get client IP
@@ -299,8 +299,8 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
         Returns:
             Response or validation error
         """
-        # Skip sanitization for health checks and static files
-        if request.url.path in ["/health", "/health/detailed", "/", "/api/docs", "/api/redoc", "/openapi.json"]:
+        # Skip sanitization for health checks, static files, and CORS preflight
+        if request.method == "OPTIONS" or request.url.path in ["/health", "/health/detailed", "/", "/api/docs", "/api/redoc", "/openapi.json"]:
             return await call_next(request)
         
         # Determine if this is a YAML-handling endpoint
@@ -392,8 +392,8 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         Returns:
             Response or authentication error
         """
-        # Skip authentication for public paths
-        if self.is_public_path(request.url.path):
+        # Skip authentication for public paths and CORS preflight
+        if request.method == "OPTIONS" or self.is_public_path(request.url.path):
             return await call_next(request)
         
         # Check for Authorization header
