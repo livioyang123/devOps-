@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     # Encryption key for API keys storage (32 bytes base64)
     encryption_key: str = "your-encryption-key-change-in-production-32bytes=="
     
+    # Rate limiting
+    rate_limit_per_minute: int = 60
+
     # CORS
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8000"]
     
