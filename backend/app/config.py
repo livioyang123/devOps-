@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     rate_limit_per_minute: int = 60
 
     # CORS
-    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:3001", "http://localhost:8000"]
     
     # Monitoring
     prometheus_url: str = "http://prometheus:9090"
