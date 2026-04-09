@@ -3,13 +3,13 @@ Template management API endpoints for pre-built Docker Compose templates
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 import logging
 import uuid
 import re
 
 from app.database import get_db
-from app.auth import get_current_user, TokenData
+from app.auth import get_current_user, get_current_user_optional, TokenData
 from app.models import Template
 from app.schemas import (
     TemplateResponse,
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/api/templates", tags=["templates"])
 @router.get("", response_model=TemplateListResponse)
 async def list_templates(
     db: Session = Depends(get_db),
-    current_user: TokenData = Depends(get_current_user)
+    current_user: Optional[TokenData] = Depends(get_current_user_optional)
 ):
     """
     Get all available templates
@@ -68,7 +68,7 @@ async def list_templates(
 async def get_template(
     template_id: str,
     db: Session = Depends(get_db),
-    current_user: TokenData = Depends(get_current_user)
+    current_user: Optional[TokenData] = Depends(get_current_user_optional)
 ):
     """
     Get a specific template by ID
