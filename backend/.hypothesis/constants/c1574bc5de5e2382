@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\alert.py
+# hypothesis_version: 6.151.4
+
+[30.0, 1024, 'Content-Type', 'From', 'Subject', 'To', 'affected_resource', 'alert_id', 'application/json', 'condition_type', 'cpu_threshold', 'current_value', 'default', 'deployment_failure', 'email', 'failed', 'headers', 'in_app', 'memory_threshold', 'message', 'plain', 'pod_restart_count', 'recipient', 'rolled_back', 'threshold_value', 'timestamp', 'url', 'user_id', 'webhook']

@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\monitor.py
+# hypothesis_version: 6.151.4
+
+[0.0, 30.0, 1000000000.0, 5000, ',', '0', 'container', 'container_name', 'cpu_usage', 'data', 'debug', 'direction', 'end', 'err', 'error', 'forward', 'info', 'labels', 'level', 'limit', 'line', 'memory_usage', 'metric', 'name', 'namespace', 'network', 'pod', 'pod_name', 'query', 'result', 'rx', 'rx_bytes', 'start', 'status', 'stream', 'success', 'time', 'timestamp', 'tx', 'tx_bytes', 'unknown', 'value', 'values', 'warn', 'warning', '{', '}']

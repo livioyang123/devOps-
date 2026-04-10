@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\deploy.py
+# hypothesis_version: 6.151.4
+
+['/api', '/deploy', 'cluster_id', 'created_at', 'deployed_at', 'deployment', 'deployment_id', 'error_message', 'manifest_count', 'name', 'namespace', 'status', 'updated_at']

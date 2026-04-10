@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\monitor.py
+# hypothesis_version: 6.151.4
+
+[0.3, 500, 1000, 2000, 5000, '/analyze-logs', '/api', 'Cache-Control', 'Connection', 'X-Accel-Buffering', 'anthropic', 'default', 'google', 'info', 'keep-alive', 'monitoring', 'no', 'no-cache', 'ollama', 'openai', 'text/event-stream']

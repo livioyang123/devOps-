@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\alerts.py
+# hypothesis_version: 6.151.4
+
+[400, 401, 404, 500, '/api/alerts', '/{alert_id}', 'alert_id', 'alerts', 'model', 'user_id']

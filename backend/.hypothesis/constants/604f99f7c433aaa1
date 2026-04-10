@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\config.py
+# hypothesis_version: 6.151.4
+
+[0.0, 2.0, 4096, 8192, 32000, 200000, '****', '/api/config', '/llm', '/model', '/models', '/parameters', 'Claude Opus 3', 'Claude Sonnet 3.5', 'GPT-3.5 Turbo', 'GPT-4', 'Gemini Pro', 'Llama 3 70B', 'anthropic', 'claude-opus-3', 'claude-sonnet-3.5', 'configuration', 'gemini-pro', 'google', 'gpt-3.5-turbo', 'gpt-4', 'llama-3-70b', 'ollama', 'openai']

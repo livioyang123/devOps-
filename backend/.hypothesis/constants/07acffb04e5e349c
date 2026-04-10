@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\celery_app.py
+# hypothesis_version: 6.151.4
+
+[0.0, 1000, 3600, 'UTC', 'anomalies', 'applied_manifests', 'cached', 'cluster_id', 'common_errors', 'completed', 'conversion_time', 'deployment_id', 'devops_k8s_platform', 'error', 'failed', 'health_check_passed', 'info', 'json', 'logs_analyzed', 'manifests', 'metrics', 'model_used', 'pods', 'recommendations', 'removed_resources', 'rollback_performed', 'rolled_back', 'services', 'severity', 'status', 'summary', 'time_range', 'timestamp', 'visibility_timeout']

@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\deployer.py
+# hypothesis_version: 6.151.4
+
+[100, 404, 'ConfigMap', 'Deployment', 'Ingress', 'Ready', 'Running', 'Secret', 'Service', 'StatefulSet', 'True', 'applied_manifests', 'authorization', 'clusterIP', 'containers', 'count', 'current_step', 'default', 'events', 'host', 'in_progress', 'is_ready', 'is_running', 'kind', 'message', 'metadata', 'name', 'namespace', 'node', 'phase', 'progress', 'ready', 'reason', 'restart_count', 'running', 'spec', 'start_time', 'state', 'status', 'timestamp', 'token', 'type', 'unknown', 'verify_ssl']

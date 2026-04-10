@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\convert.py
+# hypothesis_version: 6.151.4
+
+['/api/convert', '/status/{task_id}', '/sync', 'FAILURE', 'PENDING', 'RETRY', 'STARTED', 'SUCCESS', 'Task failed', 'build', 'command', 'container', 'convert', 'depends_on', 'driver', 'driver_opts', 'environment', 'error', 'external', 'host', 'image', 'ipam', 'message', 'name', 'networks', 'pending', 'poll_url', 'ports', 'result', 'services', 'status', 'task_id', 'version', 'volumes']

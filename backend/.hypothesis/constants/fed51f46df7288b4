@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\websocket.py
+# hypothesis_version: 6.151.4
+
+['/ws/status', 'active_deployments', 'deployment_id', 'deployments', 'operational', 'ping', 'pong', 'status', 'total_connections', 'type', 'websocket']

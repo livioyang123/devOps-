@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\clusters.py
+# hypothesis_version: 6.151.4
+
+['/api/clusters', '/{cluster_id}', 'aks', 'clusters', 'eks', 'encrypted', 'gke', 'in_progress', 'kind', 'minikube', 'pending']

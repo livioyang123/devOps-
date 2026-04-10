@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\auth.py
+# hypothesis_version: 6.151.4
+
+['Bearer', 'WWW-Authenticate', 'auto', 'bcrypt', 'bearer', 'email', 'exp', 'sub', 'user_id']

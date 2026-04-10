@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\converter.py
+# hypothesis_version: 6.151.4
+
+[1000, '#', '---', '/health', '/ready', '100m', '128Mi', '500m', '512Mi', 'ClusterIP', 'Deployment', 'RollingUpdate', 'Service', 'StatefulSet', 'Unknown', 'apiVersion', 'app', 'apps/v1', 'containerPort', 'containers', 'cpu', 'default', 'env', 'httpGet', 'image', 'initialDelaySeconds', 'kind', 'labels', 'limits', 'livenessProbe', 'manifests', 'matchLabels', 'maxSurge', 'maxUnavailable', 'memory', 'metadata', 'name', 'namespace', 'nginx:latest', 'path', 'periodSeconds', 'port', 'ports', 'protocol', 'readinessProbe', 'replicas', 'requests', 'resources', 'rollingUpdate', 'runAsNonRoot', 'runAsUser', 'securityContext', 'selector', 'spec', 'strategy', 'targetPort', 'template', 'type', 'unnamed', 'v1', 'value']

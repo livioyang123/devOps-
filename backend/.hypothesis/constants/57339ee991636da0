@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\websocket_handler.py
+# hypothesis_version: 6.151.4
+
+['applied_manifests', 'completion', 'current_step', 'deployment_id', 'details', 'error', 'message', 'progress', 'progress_update', 'status', 'timestamp', 'type']

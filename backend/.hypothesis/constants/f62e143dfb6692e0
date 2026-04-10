@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\main.py
+# hypothesis_version: 6.151.4
+
+[8000, '*', '/', '/api/auth', '/api/docs', '/api/redoc', '/health', '/health/detailed', '0.0.0.0', '1.0.0', 'Connected', 'Connection failed', '__main__', 'app.main:app', 'authentication', 'cache', 'celery', 'components', 'degraded', 'docs', 'healthy', 'info', 'message', 'redis', 'service', 'status', 'unhealthy', 'version', 'workers']

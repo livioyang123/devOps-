@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\config.py
+# hypothesis_version: 6.151.4
+
+[587, '.env', 'DevOps K8s Platform', 'HS256', 'development', 'http://loki:3100', 'redis://redis:6379/0', 'smtp.gmail.com']

@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\parser.py
+# hypothesis_version: 6.151.4
+
+[':', '=', 'ParserError', 'ScannerError', 'UnexpectedError', 'YAML parsing error', 'YAML scanning error', 'YAMLError', 'build', 'command', 'depends_on', 'driver', 'driver_opts', 'environment', 'external', 'image', 'ipam', 'networks', 'ports', 'protocol', 'published', 'services', 'source', 'target', 'tcp', 'version', 'volumes']

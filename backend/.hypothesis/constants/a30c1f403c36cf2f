@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\models.py
+# hypothesis_version: 6.151.4
+
+[100, 255, 'AlertConfiguration', 'Cluster', 'Deployment', 'alert_configurations', 'cluster', 'clusters', 'clusters.id', 'deployment', 'deployments', 'deployments.id', 'llm_configurations', 'task_status', 'templates', 'users']

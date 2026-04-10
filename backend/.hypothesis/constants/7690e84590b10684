@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\schemas.py
+# hypothesis_version: 6.151.4
+
+[0.0, 0.7, 2.0, 100, 4000, 32000, 'CPU usage in cores', 'Cluster name', 'Custom system prompt', 'Model description', 'Monthly cost for CPU', 'Number of pods', 'Provider name', 'Received bytes', 'Total monthly cost', 'Transmitted bytes', 'completed', 'default', 'failed', 'gpt-4', 'in_progress', 'info', 'pending', 'rolled_back', 'tcp']

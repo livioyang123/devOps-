@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\llm_providers.py
+# hypothesis_version: 6.151.4
+
+[120.0, 4096, 8192, 16384, 32768, 200000, 1000000, '2023-06-01', 'Authorization', 'Content-Type', 'anthropic', 'anthropic-version', 'application/json', 'candidates', 'choices', 'claude-2.1', 'claude-3-haiku', 'claude-3-opus', 'claude-3-sonnet', 'codellama', 'content', 'contents', 'gemini-1.5-pro', 'gemini-pro', 'generationConfig', 'google', 'gpt-3.5-turbo', 'gpt-3.5-turbo-16k', 'gpt-4', 'gpt-4-32k', 'llama2', 'llama3', 'maxOutputTokens', 'max_tokens', 'message', 'messages', 'mistral', 'model', 'num_predict', 'ollama', 'openai', 'options', 'parts', 'prompt', 'response', 'role', 'stream', 'system', 'temperature', 'text', 'user', 'x-api-key']

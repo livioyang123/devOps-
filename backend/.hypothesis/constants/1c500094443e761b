@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\templates.py
+# hypothesis_version: 6.151.4
+
+['/api/templates', '/{template_id}', '/{template_id}/load', 'parameters', 'templates']

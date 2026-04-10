@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\auth.py
+# hypothesis_version: 6.151.4
+
+['/login', '/me', '/refresh', '/register', 'Demo User', 'bearer', 'email', 'sub', 'user-123', 'user@example.com']

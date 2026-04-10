@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\cost_estimator.py
+# hypothesis_version: 6.151.4
+
+[0.0, 0.1, 0.15, 0.17, 3.28, 3.5, 3.65, 29.2, 31.39, 33.0, 1000.0, 1024.0, '0', 'DaemonSet', 'Deployment', 'G', 'GI', 'K', 'KI', 'M', 'MI', 'StatefulSet', 'T', 'TI', 'aks', 'containers', 'cpu', 'cpu_per_core', 'eks', 'gke', 'kind', 'm', 'memory', 'memory_per_gb', 'replicas', 'requests', 'resources', 'spec', 'storage', 'storage_per_gb', 'template']

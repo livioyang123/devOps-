@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\cost.py
+# hypothesis_version: 6.151.4
+
+[400, 404, 500, '/api', 'aks', 'content', 'cost-estimation', 'default', 'eks', 'gke', 'kind', 'name', 'namespace']

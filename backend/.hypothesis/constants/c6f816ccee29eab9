@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\services\ai_analyzer.py
+# hypothesis_version: 6.151.4
+
+[0.3, 100, 200, 2000, '%Y-%m-%d %H:%M:%S', ',', '-', '- ', 'ANOMALIES', 'ConfigError', 'ContainerCreating', 'CrashLoopBackOff', 'ImagePullBackOff', 'NetworkError', 'OOMKilled', 'PodEvicted', 'RECOMMENDATIONS', 'SEVERITY', 'SUMMARY', 'VolumeMount', 'critical', 'gpt-4', 'info', 'normal', 'warning', '|']

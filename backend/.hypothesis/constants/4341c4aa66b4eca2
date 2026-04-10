@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\routers\export.py
+# hypothesis_version: 6.151.4
+
+['/api', 'Content-Disposition', 'README.md', 'application/zip', 'clusterrole', 'clusterrolebinding', 'clusterrolebindings', 'clusterroles', 'configmap', 'configmaps', 'content', 'cronjob', 'cronjobs', 'daemonset', 'daemonsets', 'deployment', 'deployments', 'export', 'ingress', 'ingresses', 'job', 'jobs', 'kind', 'name', 'namespace', 'namespaces', 'other', 'role', 'rolebinding', 'rolebindings', 'roles', 'secret', 'secrets', 'service', 'serviceaccount', 'serviceaccounts', 'services', 'statefulset', 'statefulsets', 'unknown', 'unnamed', 'w']

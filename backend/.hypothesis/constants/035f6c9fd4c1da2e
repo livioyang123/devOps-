@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\tasks\deployment.py
+# hypothesis_version: 6.151.4
+
+['Deployment failed', 'applied_manifests', 'cluster_id', 'completed', 'default', 'deployment_id', 'error_message', 'error_type', 'failed', 'failed_manifests', 'health_check', 'health_check_message', 'health_check_passed', 'healthy', 'manifests', 'message', 'pod_count', 'pod_statuses', 'rollback_performed', 'status', 'unhealthy_pods']

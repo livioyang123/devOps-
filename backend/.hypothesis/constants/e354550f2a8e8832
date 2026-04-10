@@ -1,0 +1,4 @@
+# file: C:\Users\39347\OneDrive - unifi.it\Desktop\devOps\backend\app\tasks\base.py
+# hypothesis_version: 6.151.4
+
+['FAILURE', 'PROGRESS', 'SUCCESS', 'error', 'execution_time', 'message', 'progress', 'timestamp', 'traceback']
