@@ -309,8 +309,13 @@ class OllamaProvider(LLMProvider):
                 return data['response']
                 
         except httpx.HTTPStatusError as e:
-            logger.error(f"Ollama API error: {e.response.status_code} - {e.response.text}")
-            raise Exception(f"Ollama API error: {e.response.status_code}")
+            error_body = ""
+            try:
+                error_body = e.response.json().get("error", e.response.text)
+            except Exception:
+                error_body = e.response.text
+            logger.error(f"Ollama API error: {e.response.status_code} - {error_body}")
+            raise Exception(f"Ollama API error: {e.response.status_code} — {error_body}")
         except httpx.ConnectError:
             logger.error("Cannot connect to Ollama. Is it running?")
             raise Exception("Cannot connect to Ollama. Please ensure Ollama is running.")
