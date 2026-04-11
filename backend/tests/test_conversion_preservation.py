@@ -103,6 +103,36 @@ def _make_converter_mock(cached: bool = False):
     return MagicMock(return_value=(manifests, cached, 0.42))
 
 
+def _preservation_patches(converter_mock):
+    """
+    Return a context manager stack that:
+    1. Bypasses rate limiting (so hypothesis runs don't exhaust the token bucket)
+    2. Provides a fake openai_api_key on settings (so providers dict is non-empty)
+    3. Stubs OpenAIProvider.__init__ (so no real HTTP client is created)
+    4. Stubs LLMRouter.__init__ (so no real router is created)
+    5. Replaces ConverterService.convert_to_k8s with the supplied mock
+    """
+    from unittest.mock import patch
+    import contextlib
+
+    @contextlib.contextmanager
+    def _ctx():
+        mock_settings = MagicMock()
+        mock_settings.openai_api_key = "sk-fake-key-for-testing"
+        mock_settings.anthropic_api_key = None
+        mock_settings.google_api_key = None
+        mock_settings.ollama_endpoint = None
+
+        with patch("app.middleware.RateLimitMiddleware.dispatch", _passthrough_rate_limit), \
+             patch("app.config.settings", mock_settings), \
+             patch("app.services.llm_providers.OpenAIProvider.__init__", return_value=None), \
+             patch("app.services.llm_router.LLMRouter.__init__", return_value=None), \
+             patch("app.services.converter.ConverterService.convert_to_k8s", converter_mock):
+            yield
+
+    return _ctx()
+
+
 # ---------------------------------------------------------------------------
 # Property tests — valid provider path returns HTTP 200 with manifests
 # ---------------------------------------------------------------------------
@@ -121,10 +151,7 @@ def test_preservation_valid_provider_returns_200(request_body):
     """
     from app.main import app
 
-    with patch("app.middleware.RateLimitMiddleware.dispatch", _passthrough_rate_limit), \
-         patch("app.services.llm_router.LLMRouter.__init__", return_value=None), \
-         patch("app.services.converter.ConverterService.convert_to_k8s",
-               _make_converter_mock(cached=False)):
+    with _preservation_patches(_make_converter_mock(cached=False)):
         client = TestClient(app, raise_server_exceptions=False)
         response = client.post("/api/convert/sync", json=request_body)
 
@@ -154,10 +181,7 @@ def test_preservation_valid_provider_manifests_have_kind(request_body):
     """
     from app.main import app
 
-    with patch("app.middleware.RateLimitMiddleware.dispatch", _passthrough_rate_limit), \
-         patch("app.services.llm_router.LLMRouter.__init__", return_value=None), \
-         patch("app.services.converter.ConverterService.convert_to_k8s",
-               _make_converter_mock(cached=False)):
+    with _preservation_patches(_make_converter_mock(cached=False)):
         client = TestClient(app, raise_server_exceptions=False)
         response = client.post("/api/convert/sync", json=request_body)
 
@@ -207,10 +231,7 @@ def test_preservation_cache_hit_returns_200_with_cached_manifests():
         "parameters": {},
     }
 
-    with patch("app.middleware.RateLimitMiddleware.dispatch", _passthrough_rate_limit), \
-         patch("app.services.llm_router.LLMRouter.__init__", return_value=None), \
-         patch("app.services.converter.ConverterService.convert_to_k8s",
-               _make_converter_mock(cached=True)):
+    with _preservation_patches(_make_converter_mock(cached=True)):
         client = TestClient(app, raise_server_exceptions=False)
         response = client.post("/api/convert/sync", json=request_body)
 
@@ -272,9 +293,7 @@ def test_preservation_cache_hit_does_not_call_llm():
         "parameters": {},
     }
 
-    with patch("app.middleware.RateLimitMiddleware.dispatch", _passthrough_rate_limit), \
-         patch("app.services.llm_router.LLMRouter.__init__", return_value=None), \
-         patch("app.services.converter.ConverterService.convert_to_k8s", mock_convert):
+    with _preservation_patches(mock_convert):
         client = TestClient(app, raise_server_exceptions=False)
         response = client.post("/api/convert/sync", json=request_body)
 

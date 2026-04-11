@@ -134,11 +134,31 @@ async def convert_compose_sync(request: ConversionRequest) -> ConversionResponse
         from app.services.parser import ParserService
         from app.services.converter import ConverterService
         from app.services.llm_router import LLMRouter, ModelParameters
+        from app.services.llm_providers import OpenAIProvider, AnthropicProvider, GoogleProvider, OllamaProvider
         from app.services.cache import cache_service
-        
+        from app.config import settings
+
+        # Build providers dict from configured API keys
+        providers = {}
+        if settings.openai_api_key:
+            providers["openai"] = OpenAIProvider(api_key=settings.openai_api_key)
+        if settings.anthropic_api_key:
+            providers["anthropic"] = AnthropicProvider(api_key=settings.anthropic_api_key)
+        if settings.google_api_key:
+            providers["google"] = GoogleProvider(api_key=settings.google_api_key)
+        if settings.ollama_endpoint:
+            providers["ollama"] = OllamaProvider(endpoint=settings.ollama_endpoint)
+
+        # Detect missing provider before attempting conversion
+        if not providers:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No LLM provider is configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or configure Ollama.",
+            )
+
         # Initialize services
         parser = ParserService()
-        llm_router = LLMRouter()
+        llm_router = LLMRouter(providers=providers)
         converter = ConverterService(llm_router, cache_service)
         
         # Reconstruct compose content from structure
@@ -161,16 +181,34 @@ async def convert_compose_sync(request: ConversionRequest) -> ConversionResponse
             cached=cached,
             conversion_time=conversion_time
         )
-        
+
+    except HTTPException:
+        # Re-raise HTTPExceptions unchanged (e.g., the 503 raised above)
+        raise
     except ValueError as e:
+        error_msg = str(e)
+        # Provider-configuration errors (e.g., "Provider 'X' not configured") → 503
+        if "not configured" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=error_msg,
+            )
+        # Request-payload validation errors (e.g., invalid model name format) → 400
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
+            detail=error_msg,
         )
     except Exception as e:
+        error_msg = str(e)
+        # LLMRouter exhausted all retries → 503 (service unavailable, not a client error)
+        if "retry attempts failed" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=error_msg,
+            )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to convert Docker Compose: {str(e)}",
+            detail=f"Failed to convert Docker Compose: {error_msg}",
         )
 
 

@@ -65,7 +65,7 @@ def client():
 
 
 @given(request_body=conversion_request_bug_condition)
-@settings(max_examples=5, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=5, suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)
 def test_bug_condition_conversion_returns_503_not_500(request_body):
     """
     Property 1 (Bug Condition): When no LLM provider is configured,
