@@ -30,7 +30,7 @@ class OpenAIProvider(LLMProvider):
             'gpt-3.5-turbo-16k': 16384,
         }
     
-    def generate(self, prompt: str, parameters: ModelParameters) -> str:
+    def generate(self, prompt: str, parameters: ModelParameters, model: str = "gpt-4") -> str:
         """
         Generate response using OpenAI API
         
@@ -55,7 +55,7 @@ class OpenAIProvider(LLMProvider):
         messages.append({"role": "user", "content": prompt})
         
         payload = {
-            "model": "gpt-4",  # Default model
+            "model": model or "gpt-4",
             "messages": messages,
             "temperature": parameters.temperature,
             "max_tokens": parameters.max_tokens
@@ -109,7 +109,7 @@ class AnthropicProvider(LLMProvider):
             'claude-2.1': 200000,
         }
     
-    def generate(self, prompt: str, parameters: ModelParameters) -> str:
+    def generate(self, prompt: str, parameters: ModelParameters, model: str = "claude-3-sonnet-20240229") -> str:
         """
         Generate response using Anthropic API
         
@@ -130,7 +130,7 @@ class AnthropicProvider(LLMProvider):
         }
         
         payload = {
-            "model": "claude-3-sonnet-20240229",  # Default model
+            "model": model or "claude-3-sonnet-20240229",
             "max_tokens": parameters.max_tokens,
             "temperature": parameters.temperature,
             "messages": [
@@ -187,7 +187,7 @@ class GoogleProvider(LLMProvider):
             'gemini-1.5-pro': 1000000,
         }
     
-    def generate(self, prompt: str, parameters: ModelParameters) -> str:
+    def generate(self, prompt: str, parameters: ModelParameters, model: str = "gemini-pro") -> str:
         """
         Generate response using Google AI API
         
@@ -201,7 +201,7 @@ class GoogleProvider(LLMProvider):
         Raises:
             Exception: If API call fails
         """
-        model_name = "gemini-pro"
+        model_name = model or "gemini-pro"
         
         # Build the full prompt with system prompt if provided
         full_prompt = prompt
@@ -267,13 +267,14 @@ class OllamaProvider(LLMProvider):
             'codellama': 16384,
         }
     
-    def generate(self, prompt: str, parameters: ModelParameters) -> str:
+    def generate(self, prompt: str, parameters: ModelParameters, model: str = "llama3.2") -> str:
         """
         Generate response using Ollama API
         
         Args:
             prompt: The prompt to send
             parameters: Generation parameters
+            model: The Ollama model name to use
             
         Returns:
             Generated text response
@@ -281,15 +282,13 @@ class OllamaProvider(LLMProvider):
         Raises:
             Exception: If API call fails
         """
-        model_name = "llama2"  # Default model
-        
         # Build the full prompt with system prompt if provided
         full_prompt = prompt
         if parameters.system_prompt:
             full_prompt = f"{parameters.system_prompt}\n\n{prompt}"
         
         payload = {
-            "model": model_name,
+            "model": model,
             "prompt": full_prompt,
             "stream": False,
             "options": {

@@ -118,7 +118,7 @@ class LLMRouter:
                     f"Attempting LLM generation with {provider_name} "
                     f"(attempt {attempt + 1}/{retry_count})"
                 )
-                response = provider.generate(managed_prompt, parameters)
+                response = provider.generate(managed_prompt, parameters, model=model)
                 logger.info(f"Successfully generated response from {provider_name}")
                 return response
                 
