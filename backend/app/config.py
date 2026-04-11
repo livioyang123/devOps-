@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     debug: bool = False
     environment: str = "development"
     
-    # Database - ✅ USA POSTGRES, NON LOCALHOST
-    database_url: str = "postgresql://devops:devops123@postgres:5432/devops_k8s"
+    # Database
+    database_url: str = "sqlite:///./devops_k8s.db"
     
     # Redis
     redis_url: str = "redis://redis:6379/0"
