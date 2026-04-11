@@ -293,12 +293,12 @@ class OllamaProvider(LLMProvider):
             "stream": False,
             "options": {
                 "temperature": parameters.temperature,
-                "num_predict": parameters.max_tokens,
+                "num_predict": min(parameters.max_tokens, 2000),  # cap for small models
             }
         }
         
         try:
-            with httpx.Client(timeout=120.0) as client:
+            with httpx.Client(timeout=300.0) as client:  # 5 min — small models can be slow
                 response = client.post(
                     f"{self.endpoint}/api/generate",
                     json=payload
